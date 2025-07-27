@@ -38,7 +38,6 @@ function register() {
   if (!email || !name || !password) return alert("Vui lòng nhập đầy đủ thông tin!");
 
   const users = JSON.parse(localStorage.getItem("users") || "{}");
-  if (users[email]) return alert("Email đã tồn tại!");
 
   users[email] = { name, phone, password };
   localStorage.setItem("users", JSON.stringify(users));
@@ -56,7 +55,20 @@ function login() {
     return;
   }
 
-  currentUser = { email, name: users[email].name };
+  currentUser = {
+  email,
+  name: users[email].name,
+  phone: users[email].phone,
+  avatar: users[email].avatar || null
+};
+ if (currentUser.avatar) {
+  avatarPreview.src = currentUser.avatar;
+}
+document.getElementById("userName").innerText = currentUser.name;
+document.getElementById("profileUsername").textContent = currentUser.email;
+document.getElementById("profileName").textContent = currentUser.name;
+document.getElementById("profilePhone").textContent = currentUser.phone || "Chưa có";
+
   localStorage.setItem("currentUser", JSON.stringify(currentUser));
   document.getElementById("userName").innerText = currentUser.name;
   showApp();
@@ -88,7 +100,7 @@ function saveEntry(type) {
   const minute = now.getMinutes();
   const totalMinutes = hour * 60 + minute;
 
-  if (totalMinutes >= 690 && totalMinutes < 780) {
+ if (totalMinutes >= 690 && totalMinutes < 780) {
     alert("⛔ Nghỉ trưa (11:30 - 13:00), không thể chấm công!");
     return;
   }
@@ -197,26 +209,31 @@ function renderStats() {
 
 function showEmployeeList() {
   const users = JSON.parse(localStorage.getItem("users") || "{}");
-  const list = Object.entries(users).map(([email, u]) =>
+
+  const rows = Object.entries(users).map(([email, u]) =>
     `<tr>
       <td>${u.name}</td>
       <td>${email}</td>
       <td>${u.phone || "Chưa có"}</td>
+      <td><button onclick="deleteUser('${email}')">🗑️</button></td>
     </tr>`
   ).join("");
 
-  document.getElementById("employeeData").innerHTML = `
-    <h3>📋 Danh sách công nhân</h3>
-    <table>
-      <tr>
-        <th>👤 Tên</th>
-        <th>📧 E-mail</th>
-        <th>📱 Số điện thoại</th>
-      </tr>
-      ${list}
-    </table>`;
+  document.getElementById("employeeTableBody").innerHTML = rows;
+
   document.getElementById("employeeList").style.display = "block";
   document.getElementById("summaryArea").style.display = "none";
+}
+
+function deleteUser(key){
+  if (!confirm("Bạn có chắc muốn xoá tài khoản này?")) return;
+
+  const users = JSON.parse(localStorage.getItem("users") || "{}");
+  delete users[key];
+  localStorage.setItem("users", JSON.stringify(users));
+
+  alert("✅ Đã xoá tài khoản!");
+  showEmployeeList(); // Cập nhật lại danh sách
 }
 
 function summarizeMonth() {
@@ -236,6 +253,9 @@ function summarizeMonth() {
       offDays: new Set()
     };
   }
+
+function deleteUser(key) {
+}
 
   for (const entry of entries) {
     if (entry.monthYear === currentMonthYear && summary[entry.email]) {
@@ -277,7 +297,14 @@ function checkSession() {
   const saved = localStorage.getItem("currentUser");
   if (saved) {
     currentUser = JSON.parse(saved);
+  if (currentUser.avatar) {
+  avatarPreview.src = currentUser.avatar;
+}
     document.getElementById("userName").innerText = currentUser.name;
+    document.getElementById("profileUsername").textContent = currentUser.email;
+document.getElementById("profileName").textContent = currentUser.name;
+document.getElementById("profilePhone").textContent = currentUser.phone || "Chưa có";
+
     showApp();
     renderHistory();
     renderStats();
@@ -286,4 +313,121 @@ function checkSession() {
   }
 }
 
+const profilePopup = document.getElementById("profilePopup");
+const avatarPreview = document.getElementById("avatarPreview");
+const profileName = document.getElementById("profileName");
+const profilePhone = document.getElementById("profilePhone");
+const profileUsername = document.getElementById("profileUsername");
+const editBtn = document.getElementById("editBtn");
+
+document.getElementById("profileBtn").addEventListener("click", () => {
+  profilePopup.classList.add("show");
+});
+
+function closeProfilePopup() {
+  profilePopup.classList.remove("show");
+}
+
+// Đổi avatar
+function changeAvatar(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      avatarPreview.src = e.target.result;
+
+      // ✅ Lưu avatar vào currentUser và localStorage
+      currentUser.avatar = e.target.result;
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// Chỉnh sửa thông tin
+let isEditing = false;
+
+function toggleEdit() {
+  isEditing = !isEditing;
+
+  profileName.contentEditable = isEditing;
+  profilePhone.contentEditable = isEditing;
+
+  if (isEditing) {
+    editBtn.textContent = "Lưu";
+    profileName.style.borderBottom = "1px dashed #999";
+    profilePhone.style.borderBottom = "1px dashed #999";
+  } else {
+    editBtn.textContent = "Chỉnh sửa";
+    profileName.style.borderBottom = "none";
+    profilePhone.style.borderBottom = "none";
+
+    // Tùy chọn: bạn có thể lưu dữ liệu ở đây nếu muốn
+    // localStorage.setItem("name", profileName.textContent);
+    // localStorage.setItem("phone", profilePhone.textContent);
+  }
+}
+
 checkSession();
+
+function showFullScreenEmployee() {
+  // Ẩn tiêu đề và giao diện chính
+  document.getElementById("app").style.display = "none";
+  document.getElementById("pageHeader").style.display = "none";
+
+  // Hiện danh sách toàn màn hình
+  document.getElementById("fullscreenEmployeeListWrapper").style.display = "block";
+  renderEmployeeFullScreen();
+}
+
+function goBackFromFullScreen() {
+  // Ẩn giao diện fullscreen
+  document.getElementById("fullscreenEmployeeListWrapper").style.display = "none";
+
+  // Hiện lại header và giao diện chính
+  document.getElementById("app").style.display = "block";
+  document.getElementById("pageHeader").style.display = "flex";
+}
+
+function renderEmployeeFullScreen(filteredList = null) {
+  const tbody = document.getElementById("fullscreenTableBody");
+  tbody.innerHTML = "";
+
+  const users = JSON.parse(localStorage.getItem("users")) || {};
+  const userArray = Object.entries(users).map(([email, user]) => ({
+    email,
+    name: user.name,
+    phone: user.phone
+  }));
+
+  const listToRender = filteredList || userArray;
+
+  listToRender.forEach(user => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${user.name}</td>
+      <td>${user.email}</td>
+      <td>${user.phone || "Chưa có"}</td>
+      <td><button class="delete-text-btn" onclick="deleteUser('${user.email}')">Xoá</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterEmployeeTable() {
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+  const users = JSON.parse(localStorage.getItem("users")) || {};
+  const userArray = Object.entries(users).map(([email, user]) => ({
+    email,
+    name: user.name,
+    phone: user.phone
+  }));
+
+  const filtered = userArray.filter(user =>
+    user.name.toLowerCase().includes(keyword) ||
+    user.email.toLowerCase().includes(keyword) ||
+    (user.phone || "").toLowerCase().includes(keyword)
+  );
+
+  renderEmployeeFullScreen(filtered);
+}
