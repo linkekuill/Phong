@@ -623,8 +623,14 @@ function startUniversalQRScanner() {
         time: now
       });
       localStorage.setItem("timeLogs", JSON.stringify(logs));
+
+      // Gán dữ liệu cho hiển thị
+      currentUser.status = "✅ Đã chấm công";
+      currentUser.shift = shift;
+      showQRResult(currentUser);  // Gọi hàm hiển thị
     } else {
       alert("❌ Mã QR không hợp lệ");
+      showQRResult(null); // Gọi để hiển thị trạng thái thất bại
     }
   });
 
@@ -660,4 +666,24 @@ function hideAllSections() {
 const savedUser = localStorage.getItem("currentUser");
 if (savedUser) {
   currentUser = JSON.parse(savedUser);
+}
+
+function showQRResult(user) {
+  const nameEl = document.getElementById("qrStatusName");
+  const shiftEl = document.getElementById("qrShift");
+  const textEl = document.getElementById("qrStatusText");
+  const avatarEl = document.getElementById("qrStatusAvatar");
+
+  if (!user) {
+    nameEl.innerText = "Không rõ";
+    shiftEl.innerText = "Ca làm: Chưa rõ";
+    textEl.innerText = "❌ Không hợp lệ";
+    avatarEl.src = "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png";
+    return;
+  }
+
+  nameEl.innerText = user.name || "Không rõ";
+  shiftEl.innerText = "Ca làm: " + (user.shift || "Chưa rõ");
+  textEl.innerText = user.status || "Đã chấm công";
+  avatarEl.src = user.avatar || "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png";
 }
