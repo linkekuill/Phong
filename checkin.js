@@ -73,3 +73,20 @@ window.onload = function () {
     statusEl.style.color = "red";
   }
 };
+
+document.addEventListener("DOMContentLoaded", function () {
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get("name");
+  const shift = params.get("shift");
+  const status = params.get("status");
+  const avatar = params.get("avatar");
+
+  // Gán dữ liệu vào giao diện
+  document.getElementById("qrResultName").textContent = name || "Không rõ";
+  document.getElementById("qrResultShift").textContent = shift || "Chưa rõ";
+  document.getElementById("qrResultStatus").textContent = status || "Đang xử lý...";
+
+  if (avatar) {
+    document.getElementById("qrResultAvatar").src = avatar;
+  }
+});
