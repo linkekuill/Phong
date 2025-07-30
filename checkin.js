@@ -10,9 +10,10 @@ window.onload = function () {
   const users = JSON.parse(localStorage.getItem("users")) || [];
   const user = users.find(u => u.email === email);
 
-  const avatarEl = document.getElementById("qrAvatar");
-  const nameEl = document.getElementById("qrName");
-  const statusEl = document.getElementById("qrStatus");
+  const avatarEl = document.getElementById("qrResultAvatar");
+  const nameEl = document.getElementById("qrResultName");
+  const shiftEl = document.getElementById("qrResultShift");
+  const statusEl = document.getElementById("qrResultStatus");
 
   if (!email || !user) {
     avatarEl.style.display = "none";
@@ -24,6 +25,7 @@ window.onload = function () {
 
   avatarEl.src = user.avatar || "avatar.png";
   nameEl.textContent = user.name;
+  shiftEl.textContent = user.shift || "Chưa chọn ca";
   statusEl.style.color = "green";
 
   const key = `attendance_${email}`;
@@ -71,18 +73,3 @@ window.onload = function () {
     statusEl.style.color = "red";
   }
 };
-
-document.addEventListener("DOMContentLoaded", function () {
-  const email = localStorage.getItem("currentUserEmail");
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  const user = users.find(u => u.email === email);
-
-  if (user) {
-    document.getElementById("qrResultName").textContent = user.name || "Không rõ";
-    document.getElementById("qrResultShift").textContent = user.shift || "Chưa chọn ca";
-    document.getElementById("qrResultStatus").textContent = "✅ Đã chấm công";
-    document.getElementById("qrResultAvatar").src = user.avatar || "avatar.png";
-  } else {
-    document.getElementById("qrResultStatus").textContent = "❌ Không tìm thấy người dùng";
-  }
-});
