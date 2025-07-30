@@ -5,15 +5,44 @@
   <title>QR Chấm công</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .result-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .result-box img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .info {
+      text-align: left;
+      font-size: 18px;
+    }
+    .status {
+      margin-top: 6px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
 </head>
 <body>
   <div style="text-align:center; margin-top: 100px;">
     <h2>📷 Đang xử lý chấm công...</h2>
-    <div id="qrResult" style="margin-top: 20px;">
-      <img id="qrResultAvatar" src="avatar.png" style="width: 100px; border-radius: 50%;"><br><br>
-      <strong id="qrResultName">...</strong><br>
-      Ca làm: <span id="qrResultShift">...</span><br>
-      <div id="qrResultStatus" style="margin-top: 10px; font-size: 18px;">...</div>
+
+    <!-- Kết quả sau khi quét -->
+    <div class="result-box" id="resultBox">
+      <img id="qrResultAvatar" src="avatar.png" alt="Avatar" />
+      <div class="info">
+        <div><strong>👤 Tên:</strong> <span id="qrResultName">Đang tải...</span></div>
+        <div><strong>📅 Ca:</strong> <span id="qrResultShift">...</span></div>
+        <div><strong>⏱️ Thời gian:</strong> <span id="qrResultTime">...</span></div>
+        <div class="status" id="qrResultStatus">Đang kiểm tra trạng thái...</div>
+      </div>
     </div>
   </div>
 
