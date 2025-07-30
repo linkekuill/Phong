@@ -6,9 +6,10 @@ window.onload = function () {
   const timeStr = now.toLocaleTimeString('vi-VN');
   const today = now.toLocaleDateString('vi-VN');
 
-  const email = localStorage.getItem("currentUserEmail");
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  const user = users.find(u => u.email === email);
+  const savedUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+const email = savedUser.email;
+const users = JSON.parse(localStorage.getItem("users")) || [];
+const user = users.find(u => u.email === email);
 
   const avatarEl = document.getElementById("qrResultAvatar");
   const nameEl = document.getElementById("qrResultName");
