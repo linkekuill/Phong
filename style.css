@@ -80,13 +80,13 @@ button:hover {
   width: 100%;
   border-collapse: collapse;
   table-layout: auto;
-  background-color: #fff;
+  background-color: #ecf0f1;
   font-size: 14px;
 }
 
 #employeeList th,
 #employeeList td {
-  border: 1px solid #ccc;
+  border: 1px solid #ecf0f1;
   padding: 8px 10px;
   text-align: center;
   white-space: nowrap;
@@ -155,7 +155,7 @@ button:hover {
   left: 0;
   right: 0;
   width: 100%;
-  height: 70px;
+  height: 35px;
   background-color: white;
   padding: 10px 15px;
   display: flex;
@@ -163,6 +163,22 @@ button:hover {
   justify-content: space-between;
   z-index: 1000;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Trang Chủ */
+.home-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Tiêu đề chính ở dưới */
+.main-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-top: 60px; /* đẩy xuống dưới header */
+  text-align: center;
+  white-space: nowrap;
 }
 
 .header-title h1 {
@@ -173,7 +189,7 @@ button:hover {
 
 .top-right-buttons {
   position: fixed;
-  top: 10px;
+  top: 5px;
   right: 10px;
   display: flex;
   gap: 10px;
@@ -314,18 +330,6 @@ h2 {
   margin-top: 10px;
 }
 
-/* Ô tìm kiếm */
-input[type="text"] {
-  width: 90%;
-  max-width: 500px;
-  padding: 10px;
-  margin: 10px auto;
-  display: block;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
-
 html, body {
   margin: 0;
   padding: 0;
@@ -342,48 +346,43 @@ html, body {
   -webkit-overflow-scrolling: touch; /* iOS mượt hơn */
 }
 
-/* Bảng bên trong */
 table {
   border-collapse: collapse;
-  width: max-content;   /* ✅ Cho phép bảng dài theo nội dung */
-  min-width: 100%;      /* Bảng ít cột vẫn full container */
-  background-color: white;
-  font-size: 13px;
+  width: 100%;
+  background-color: null;
+  font-size: 14px;
   margin: 0 auto;
-  table-layout: auto;
 }
 
 th, td {
-  border: 1px solid #bbb;
-  padding: 3px 0px;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 13px;
+  max-width: 140px;
 }
 
-button.delete-text-btn {
-  background-color: white;
-  color: red;
-  border: 1px solid red;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: bold;
-  transition: color 0.2s ease, border-color 0.2s ease;
-}
-
-button.delete-text-btn:hover {
-  color: darkred;
-  border-color: darkred;
-}
-
-/* Header bảng */
 th {
   background-color: #f2f2f2;
   font-weight: bold;
+}
+
+.delete-text-btn {
+  padding: 6px 12px !important;
+  border: 2px solid red !important;
+  background-color: transparent !important;
+  color: red !important;
+  border-radius: 6px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+delete-text-btn:hover {
+  color: darkred !important;
+  text-decoration: underline;
 }
 
 /* Nút quay lại */
@@ -409,4 +408,291 @@ th {
   padding: 0 10px;
   box-sizing: border-box;
   width: 100%;
+}
+
+.login-box input[type="text"],
+.login-box input[type="password"] {
+  padding: 10px;
+  margin: 5px;
+  width: 250px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.gradient-title {
+  padding: 0px; 15px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  background: linear-gradient(-45deg, #e74c3c, #f1c40f, #2ecc71, #3498db);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 5s ease infinite;
+}
+
+.header-bg {
+  position: fixed;
+  top: 55px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 20px;
+  background-color: white;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+#fullscreenTableWrapper table {
+  width: auto;
+  max-width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  font-size: 13px;
+  margin: 0 auto;
+  table-layout: auto;
+}
+
+#fullscreenTableWrapper th,
+#fullscreenTableWrapper td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  font-size: 13px;
+}
+
+#fullscreenTableWrapper th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+#fullscreenTableWrapper td button {
+  padding: 2px 6px;
+  font-size: 12px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#fullscreenTableWrapper td button:hover {
+  background-color: #c0392b;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1e1e1e;
+    color: #f0f0f0;
+  }
+
+  #pageHeader {
+    background-color: #2b2b2b;
+    color: #fff;
+  }
+
+  input, select {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+  }
+
+  button {
+    background-color: #555;
+    color: #fff;
+  }
+
+  button:hover {
+    background-color: #777;
+  }
+
+  table {
+    background-color: #2c2c2c;
+    color: #fff;
+  }
+
+  th {
+    background-color: #444;
+  }
+
+  td {
+    background-color: #333;
+  }
+
+  .entry, .stat {
+    background-color: #2c2c2c;
+  }
+
+  .entry:hover, .stat:hover {
+    background-color: #3b3b3b;
+  }
+
+  .popup-content {
+    background-color: #2c2c2c;
+    color: #fff;
+  }
+
+  .back-button {
+    background-color: #3498db;
+    color: white;
+  }
+
+  .back-button:hover {
+    background-color: #1e90ff;
+  }
+  
+  .header-bg {
+      background-color: #2b2b2b;
+    color: #fff;
+  }
+}
+
+/* Mặc định (light mode) */
+#greeting {
+  color: #333; /* màu chữ tối */
+}
+
+@media (prefers-color-scheme: dark) {
+  h2, h3, h4 {
+    background-color: null;
+    color: #ffffff !important;
+  }
+
+  label, p, span {
+    color: #dddddd;
+  }
+
+  .login-box h2 {
+    color: #ffffff !important;
+  }
+  
+  .employeeList-table {
+    background: #b0f0f0;
+  }
+}
+
+*/ Tiêu đề trang */
+.home-label {
+  padding: 10px 50px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c3e50;
+  white-space: nowrap;
+}
+
+.input-box {
+  width: 90%;
+  max-width: 270px;
+  padding: 10px;
+  margin: 6px auto; /* Giảm khoảng cách giữa các ô */
+  display: block;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #555;
+  background-color: #222;
+  color: white;
+  box-sizing: border-box;
+}
+
+/* Dùng biến màu cho header bảng */
+#employeeList th {
+  background-color: var(--thead-bg);
+  color: var(--thead-color);
+}
+
+/* Khai báo biến màu ở light mode */
+:root {
+  --thead-bg: #f2f2f2;
+  --thead-color: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-table: #1e1e1e;
+    --text-color: #ffffff;
+    --thead-bg: #333333;
+    --thead-color: #ffffff;
+  }
+}
+
+#employeeList table,
+#summaryData table,
+#fullscreenTableWrapper table {
+  background-color: var(--bg-table);
+  color: var(--text-color);
+}
+
+#employeeList th,
+#summaryData th,
+#fullscreenTableWrapper th {
+  background-color: var(--thead-bg);
+  color: var(--thead-color);
+}
+
+.entry, .stat, .popup-content {
+  background-color: var(--bg-table);
+  color: var(--text-color);
+}
+
+#personalPage {
+  padding: 15px;
+  margin-top: 90px;
+  background: #fff;
+  border: 1px solid #ccc;
+  margin: 20px;
+}
+.stat {
+  background: #f5f5f5;
+  padding: 8px;
+  margin: 5px 0;
+  border-left: 4px solid #2c3e50;
+}
+
+#personalWorkHistory,
+#personalDailyStats {
+  margin-top: 20px;
+}
+
+/* Giao diện mặc định (sáng) */
+#personalPage {
+  background-color: #fff;
+  color: #333;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  #personalPage {
+    background-color: #121212;
+    color: #eee;
+  }
+
+  #personalPage select,
+  #personalPage input,
+  #personalPage button {
+    background-color: #333;
+    color: #eee;
+    border: 1px solid #555;
+  }
+
+  #personalPage h3 {
+    color: #ddd;
+  }
+}
+
+/* Đẩy avatar xuống dưới một chút */
+#personalPage img {
+  margin-top: 20px;
 }

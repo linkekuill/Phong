@@ -21,11 +21,9 @@ function showApp() {
 
   if (currentUser.email === "admin@company.com") {
     document.getElementById("actionArea").style.display = "none";
-    document.getElementById("historyArea").style.display = "none";
     document.getElementById("managerArea").style.display = "block";
   } else {
     document.getElementById("actionArea").style.display = "block";
-    document.getElementById("historyArea").style.display = "block";
     document.getElementById("managerArea").style.display = "none";
   }
 }
@@ -55,22 +53,38 @@ function login() {
     return;
   }
 
+  // Gán đúng cấu trúc currentUser
   currentUser = {
-  email,
-  name: users[email].name,
-  phone: users[email].phone,
-  avatar: users[email].avatar || null
-};
- if (currentUser.avatar) {
-  avatarPreview.src = currentUser.avatar;
-}
-document.getElementById("userName").innerText = currentUser.name;
-document.getElementById("profileUsername").textContent = currentUser.email;
-document.getElementById("profileName").textContent = currentUser.name;
-document.getElementById("profilePhone").textContent = currentUser.phone || "Chưa có";
+    email: email,
+    name: users[email].name,
+    phone: users[email].phone,
+    avatar: users[email].avatar || null
+  };
 
+  // Lưu currentUser vào localStorage
   localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+  // Hiển thị avatar nếu có
+  if (currentUser.avatar) {
+    document.getElementById("avatarPreview").src = currentUser.avatar;
+    document.getElementById("popupAvatar").src = currentUser.avatar;
+    document.getElementById("personalAvatar").src = currentUser.avatar;
+  }
+
+  // Hiển thị thông tin người dùng
   document.getElementById("userName").innerText = currentUser.name;
+  document.getElementById("profileUsername").textContent = currentUser.email;
+  document.getElementById("profileName").textContent = currentUser.name;
+  document.getElementById("profilePhone").textContent = currentUser.phone || "Chưa có";
+  document.getElementById("personalUsername").textContent = currentUser.name;
+
+  // Nếu là admin thì hiện các nút quản lý
+  if (currentUser.email === "admin@company.com") {
+    document.getElementById("managerArea").style.display = "block";
+  } else {
+    document.getElementById("managerArea").style.display = "none";
+  }
+
   showApp();
   renderHistory();
   renderStats();
@@ -79,7 +93,18 @@ document.getElementById("profilePhone").textContent = currentUser.phone || "Chư
 function logout() {
   localStorage.removeItem("currentUser");
   currentUser = null;
-  showLogin();
+
+  // Ẩn toàn bộ phần ứng dụng
+  document.getElementById("app").style.display = "none";
+  document.getElementById("managerArea").style.display = "none";
+  document.getElementById("monthlySummaryPage").style.display = "none";
+  document.getElementById("fullscreenEmployeeListWrapper").style.display = "none";
+  document.getElementById("personalPage").style.display = "none";
+  document.getElementById("mainTitle").style.display = "none";
+
+  // Hiện lại trang đăng nhập
+  document.getElementById("loginScreen").style.display = "block";
+  document.getElementById("registerScreen").style.display = "none";
 }
 
 function getTimeInfo() {
@@ -254,9 +279,6 @@ function summarizeMonth() {
     };
   }
 
-function deleteUser(key) {
-}
-
   for (const entry of entries) {
     if (entry.monthYear === currentMonthYear && summary[entry.email]) {
       if (entry.type === "Vào" || entry.type === "Ra") {
@@ -277,20 +299,60 @@ function deleteUser(key) {
     </tr>
   `).join("");
 
-  document.getElementById("summaryData").innerHTML = `
-    <table>
-      <tr>
-        <th>📅 Tháng</th>
-        <th>👤 Tên công nhân</th>
-        <th>✅ Ngày công</th>
-        <th>📌 Ngày nghỉ</th>
-      </tr>
-      ${rows}
+  document.getElementById("monthlySummaryTableWrapper").innerHTML = `
+   <div style="overflow-x: auto;">
+      <table class="employee-table">
+        <thead>
+          <tr>
+            <th>📅 Tháng</th>
+            <th>👤 Tên công nhân</th>
+            <th>✅ Ngày công</th>
+            <th>📌 Ngày nghỉ</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </thead>
     </table>
-  `;
+  </div>
+`;
 
-  document.getElementById("summaryArea").style.display = "block";
-  document.getElementById("employeeList").style.display = "none";
+  // Hiển thị trang tổng kết, ẩn trang chính
+  document.getElementById("app").style.display = "none";
+  document.getElementById("monthlySummaryPage").style.display = "block";
+  document.getElementById("mainTitle").style.display = "none";
+  document.getElementById("pageHeader").style.display = "flex";
+}
+
+function goBackToHome() {
+  // Ẩn các trang phụ
+  document.getElementById("monthlySummaryPage").style.display = "none";
+  document.getElementById("fullscreenEmployeeListWrapper").style.display = "none";
+  document.getElementById("personalPage").style.display = "none";
+
+  // Nếu chưa đăng nhập thì quay về login
+  if (!currentUser || !currentUser.email) {
+    document.getElementById("app").style.display = "none";
+    document.getElementById("loginScreen").style.display = "block";
+    document.getElementById("mainTitle").style.display = "none";
+    return;
+  }
+
+  // Hiển thị lại giao diện chính
+  document.getElementById("app").style.display = "block";
+  document.getElementById("mainTitle").style.display = "block";
+  document.getElementById("mainTitle").style.textAlign = "left";
+  document.getElementById("mainTitle").style.margin = "0";
+  document.getElementById("mainTitle").style.padding = "10px 20px";
+  document.getElementById("pageHeader").style.display = "flex";
+
+  // Nếu là admin thì hiện lại nút quản lý
+  if (currentUser.email === "admin@company.com") {
+    document.getElementById("managerArea").style.display = "block";
+  } else {
+    document.getElementById("managerArea").style.display = "none";
+  }
 }
 
 function checkSession() {
@@ -322,6 +384,9 @@ const editBtn = document.getElementById("editBtn");
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   profilePopup.classList.add("show");
+
+  // Gán avatar mỗi lần mở popup
+  document.getElementById("popupAvatar").src = currentUser.avatar || "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png";
 });
 
 function closeProfilePopup() {
@@ -334,10 +399,14 @@ function changeAvatar(event) {
   if (file) {
     const reader = new FileReader();
     reader.onload = function (e) {
-      avatarPreview.src = e.target.result;
+      const avatarURL = e.target.result;
 
-      // ✅ Lưu avatar vào currentUser và localStorage
-      currentUser.avatar = e.target.result;
+      // Gán ảnh cho cả avatar chính và trong popup
+      document.getElementById("avatarPreview").src = avatarURL;
+      document.getElementById("popupAvatar").src = avatarURL;
+
+      // Lưu vào currentUser và localStorage
+      currentUser.avatar = avatarURL;
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
     };
     reader.readAsDataURL(file);
@@ -371,28 +440,14 @@ function toggleEdit() {
 checkSession();
 
 function showFullScreenEmployee() {
-  // Ẩn tiêu đề và giao diện chính
   document.getElementById("app").style.display = "none";
   document.getElementById("pageHeader").style.display = "none";
-
-  // Hiện danh sách toàn màn hình
+  document.getElementById("mainTitle").style.display = "none";
   document.getElementById("fullscreenEmployeeListWrapper").style.display = "block";
   renderEmployeeFullScreen();
 }
 
-function goBackFromFullScreen() {
-  // Ẩn giao diện fullscreen
-  document.getElementById("fullscreenEmployeeListWrapper").style.display = "none";
-
-  // Hiện lại header và giao diện chính
-  document.getElementById("app").style.display = "block";
-  document.getElementById("pageHeader").style.display = "flex";
-}
-
 function renderEmployeeFullScreen(filteredList = null) {
-  const tbody = document.getElementById("fullscreenTableBody");
-  tbody.innerHTML = "";
-
   const users = JSON.parse(localStorage.getItem("users")) || {};
   const userArray = Object.entries(users).map(([email, user]) => ({
     email,
@@ -402,16 +457,35 @@ function renderEmployeeFullScreen(filteredList = null) {
 
   const listToRender = filteredList || userArray;
 
-  listToRender.forEach(user => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
+  const rows = listToRender.map(user => `
+    <tr>
       <td>${user.name}</td>
       <td>${user.email}</td>
       <td>${user.phone || "Chưa có"}</td>
-      <td><button class="delete-text-btn" onclick="deleteUser('${user.email}')">Xoá</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
+      <td>
+        ${user.email === "admin@company.com"
+          ? `<button disabled title="Không thể xoá tài khoản admin" style="opacity: 0.5; cursor: not-allowed;">❌</button>`
+          : `<button class="delete-text-btn" onclick="deleteUser('${user.email}')">xoá</button>`}
+      </td>
+    </tr>
+  `).join("");
+
+  // Gắn bảng vào giao diện fullscreen
+  document.getElementById("fullscreenTableWrapper").innerHTML = `
+    <table class="employee-table">
+      <thead style="background-color: var(--thead-bg); color: var(--thead-color);">
+        <tr>
+          <th>👤 Tên</th>
+          <th>📧 Email</th>
+          <th>📱 Số điện thoại</th>
+          <th>🗑️</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
 }
 
 function filterEmployeeTable() {
@@ -430,4 +504,160 @@ function filterEmployeeTable() {
   );
 
   renderEmployeeFullScreen(filtered);
+}
+
+function showPersonalPage() {
+  document.getElementById("app").style.display = "none";
+  document.getElementById("personalPage").style.display = "block";
+  document.getElementById("mainTitle").style.display = "none";
+  document.querySelector("#pageHeader").style.display = "none";
+
+  // Hiển thị tên và avatar
+  document.getElementById("personalUsername").textContent = currentUser.name;
+  const avatarURL = currentUser.avatar || "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png";
+  const personalAvatar = document.querySelector("#personalPage img");
+  if (personalAvatar) personalAvatar.src = avatarURL;
+
+  renderPersonalStats();
+}
+
+function checkInFromPersonal() {
+  document.getElementById("shift").value = document.getElementById("personalShift").value;
+  document.getElementById("reason").value = document.getElementById("personalReason").value;
+  checkIn(); // dùng chung với JS chính
+}
+
+function checkOutFromPersonal() {
+  document.getElementById("shift").value = document.getElementById("personalShift").value;
+  document.getElementById("reason").value = document.getElementById("personalReason").value;
+  checkOut();
+}
+
+function takeLeaveFromPersonal() {
+  document.getElementById("shift").value = document.getElementById("personalShift").value;
+  document.getElementById("reason").value = document.getElementById("personalReason").value;
+  takeLeave();
+}
+
+function clearHistoryFromPersonal() {
+  clearHistory(); // dùng chung
+}
+
+function renderPersonalStats() {
+  const history = JSON.parse(localStorage.getItem("entries") || "[]");
+  const today = new Date().toLocaleDateString("vi-VN");
+  const shift = document.getElementById("personalShift").value;
+
+  const filtered = history.filter(e => e.email === currentUser.email && e.date === today && e.shift === shift);
+
+  const checkInCount = filtered.filter(e => e.type === "Vào").length;
+  const checkOutCount = filtered.filter(e => e.type === "Ra").length;
+  const leaveCount = filtered.filter(e => e.type === "Nghỉ").length;
+
+  // Hiển thị lịch sử làm việc
+  const container = document.getElementById("personalWorkHistory");
+  container.innerHTML = "<h3>📜 Lịch sử chấm công</h3>" + (
+    filtered.map(e =>
+      `<div>📅 ${e.day} | 🕒 ${e.time}<br>👉 ${e.type} | ${e.shift} ${e.reason ? `📌 ${e.reason}` : ""}</div>`
+    ).join("") || "<p>Chưa có dữ liệu</p>"
+  );
+
+  // Hiển thị thống kê
+  const stats = document.getElementById("personalDailyStats");
+  stats.innerHTML = `
+    <h3>📊 Thống kê theo ngày</h3>
+    <div>📅 ${today} (${shift})<br>
+    ✅ Vào: ${checkInCount} | ⏰ Ra: ${checkOutCount} | 📌 Nghỉ: ${leaveCount}</div>
+  `;
+}
+
+function showMonthlySummary() {
+  document.getElementById("app").style.display = "none";
+  document.getElementById("managerArea").style.display = "none";
+  document.getElementById("personalPage").style.display = "none";
+  document.getElementById("fullscreenEmployeeListWrapper").style.display = "none";
+
+  document.getElementById("monthlySummaryPage").style.display = "block";
+
+  summarizeMonth();
+}
+
+function showQRPage() {
+  hideAllSections(); // Ẩn các phần khác
+  document.getElementById("qrPage").style.display = "block";
+
+  const qrBtn = document.getElementById("qrCheckinBtn");
+  if (qrBtn) qrBtn.style.display = "none";
+
+  // Nếu là admin thì hiển thị QR cố định
+  if (currentUser && currentUser.email === "admin@company.com") {
+    document.getElementById("fixedQRAdmin").style.display = "block";
+
+    // Đợi DOM render xong rồi mới tạo QR
+    setTimeout(() => {
+      new QRious({
+        element: document.getElementById("fixedQRCode"),
+        value: "CHECKIN@CONG",
+        size: 250
+      });
+    }, 100); // đợi 100ms
+  } else {
+    document.getElementById("fixedQRAdmin").style.display = "none";
+  }
+
+  startUniversalQRScanner(); // Nhân viên bắt đầu quét
+}
+
+function startUniversalQRScanner() {
+  const scanner = new Instascan.Scanner({ video: document.getElementById('universalQRPreview') });
+  scanner.addListener('scan', function (content) {
+    if (content === "CHECKIN@CONG") {
+      const shift = document.getElementById("shiftType").value;
+      const now = new Date().toLocaleString();
+      alert(`✅ Đã chấm công ca ${shift} lúc ${now}`);
+
+      const logs = JSON.parse(localStorage.getItem("timeLogs") || "[]");
+      logs.push({
+        user: currentUser.email,
+        type: `Vào - ${shift}`,
+        time: now
+      });
+      localStorage.setItem("timeLogs", JSON.stringify(logs));
+    } else {
+      alert("❌ Mã QR không hợp lệ");
+    }
+  });
+
+  Instascan.Camera.getCameras().then(cameras => {
+    if (cameras.length > 0) {
+      scanner.start(cameras[0]);
+    } else {
+      alert("Không tìm thấy camera");
+    }
+  });
+}
+
+function goBackFromQR() {
+  document.getElementById("qrPage").style.display = "none";
+    const qrBtn = document.getElementById("qrCheckinBtn");
+  if (qrBtn) qrBtn.style.display = "inline-block";
+
+  showApp(); // hoặc bất kỳ phần nào bạn dùng để hiển thị lại giao diện chính
+}
+
+function hideAllSections() {
+  const sections = [
+    "app", "loginScreen", "registerScreen", "personalPage",
+    "monthlySummaryPage", "fullscreenEmployeeListWrapper",
+    "qrPage", "managerArea"
+  ];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+}
+
+const savedUser = localStorage.getItem("currentUser");
+if (savedUser) {
+  currentUser = JSON.parse(savedUser);
 }

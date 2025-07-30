@@ -9,16 +9,20 @@
 <body>
 
 <div id="pageHeader">
-  <div class="header-title">
-    <h1>📋 Hệ thống chấm công</h1>
+  <div class="left-header">
+    <span class="gradient-title">Trang chu</span>
   </div>
   <div class="top-right-buttons">
     <button id="profileBtn">👤</button>
 <button id="logoutBtn" onclick="logout()">⛔</button>
   </div>
 </div>
+
+<div class="header-bg" id="mainTitle">
+  <span style="font-size: 22px; font-weight: bold;">📘 Hệ thống chấm công</span>
 </div>
 
+  
 <!-- Đăng nhập -->
 <div id="loginScreen">
   <h2>🔐 Đăng nhập</h2>
@@ -31,7 +35,7 @@
 <!-- Đăng ký -->
 <div id="registerScreen">
   <h2>📝 Đăng ký tài khoản</h2>
-  <input type="text" id="regEmail" placeholder="Email"><br>
+  <input type="text" id="regEmail" placeholder="Tài khoản"><br>
   <input type="text" id="regName" placeholder="Tên công nhân"><br>
   <input type="text" id="regPhone" placeholder="Số điện thoại"><br>
   <input type="password" id="regPassword" placeholder="Mật khẩu"><br>
@@ -41,6 +45,7 @@
 
 <!-- Giao diện chính -->
 <div id="app">
+  <img id="avatarPreview" src="https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png" alt="Avatar" class="avatar-img" />
   <h2>👋 Xin chào, <span id="userName"></span></h2>
 
   <div id="actionArea">
@@ -49,30 +54,20 @@
       <option value="Chiều">🌙 Chiều</option>
     </select><br>
     <input type="text" id="reason" placeholder="Lý do nghỉ (nếu có)"><br>
+    <button onclick="showPersonalPage()">👤 Trang cá nhân</button>
     <button onclick="checkIn()">✅ Vào làm</button>
     <button onclick="checkOut()">⏰ Tan ca</button>
     <button onclick="takeLeave()">📌 Nghỉ phép</button>
     <button onclick="clearHistory()">🧹 Xoá lịch sử</button>
+    <button onclick="showQRPage()">📸 QR chấm công</button>
   </div>
-
-  <div id="managerArea" style="display:none;">
-    <button onclick="summarizeMonth()">📊 Tổng kết cuối tháng</button>
+  
+    <div id="managerArea" style="display:none;">
+    <button onclick="showMonthlySummary()">📊 Tổng kết cuối tháng</button>
     <button onclick="showFullScreenEmployee()">📋 Xem toàn bộ công nhân</button>
+    <button id="qrCheckinBtn" onclick="showQRPage()">📸 QR chấm công</button>
   </div>
-
-  <div id="historyArea">
-    <h3>📜 Lịch sử chấm công</h3>
-    <div id="history"></div>
-
-    <h3>📊 Thống kê theo ngày</h3>
-    <div id="stats"></div>
   </div>
-</div>
-
-<div id="summaryArea">
-  <h3>📈 Tổng kết cuối tháng</h3>
-  <div id="summaryData"></div>
-</div>
 
 <!-- Popup Trang cá nhân -->
 <div id="profilePopup" class="popup">
@@ -82,7 +77,7 @@
 
     <!-- Avatar -->
     <label for="avatarInput" class="avatar-label">
-      <img id="avatarPreview" src="avatar_default.png" alt="Avatar" class="avatar-img" />
+      <img id="popupAvatar" src="https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png" alt="Avatar" class="avatar-img" />
     </label>
     <input type="file" id="avatarInput" accept="image/*" style="display: none" onchange="changeAvatar(event)" />
 
@@ -103,7 +98,6 @@
 
 <!-- Giao diện toàn màn hình danh sách công nhân -->
 <div id="fullscreenEmployeeListWrapper" style="display: none; padding: 10px; box-sizing: border-box; width: 100vw; max-width: 100vw;">
-
   <!-- Tiêu đề riêng -->
   <h3 style="text-align: center; font-size: 20px; margin-bottom: 10px;">
     📋 Danh sách toàn bộ công nhân
@@ -115,33 +109,81 @@
     id="searchInput"
     oninput="filterEmployeeTable()"
     placeholder="🔍 Tìm công nhân..."
-    style="width: 100%; padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 15px;"
-  />
+    style="width: 100%; max-width: 400px; padding: 10px 12px; margin: 10px auto; display: block; font-size: 16px; border: 2px solid orange; border-radius: 10px; box-sizing: border-box;">
 
-  <!-- Bảng dữ liệu -->
-  <div style="overflow-x: auto;">
-    <table style="width: 100%; border-collapse: collapse; background-color: #fff; font-size: 13px;">
-      <thead>
-        <tr style="background-color: #f2f2f2;">
-          <th style="border: 1px solid #ccc; padding: 8px;">👤 Tên</th>
-          <th style="border: 1px solid #ccc; padding: 8px;">📧 E-mail</th>
-          <th style="border: 1px solid #ccc; padding: 8px;">📱 Số điện thoại</th>
-          <th style="border: 1px solid #ccc; padding: 8px;">🗑️ Lựa chọn<th>
-        </tr>
-      </thead>
-      <tbody id="fullscreenTableBody">
-        <!-- Dữ liệu công nhân sẽ được thêm bằng JavaScript -->
-      </tbody>
-    </table>
-  </div>
+  <!-- Bảng mới sẽ được JS chèn vào đây -->
+  <div id="fullscreenTableWrapper" style="overflow-x: auto;"></div>
 
   <!-- Nút quay lại -->
-<div class="back-button-container" style="text-align: right; margin: 20px 10px;">
-  <button class="back-button" onclick="goBackFromFullScreen()">⬅️ Quay lại</button>
+  <div class="back-button-container" style="text-align: right; margin: 20px 10px;">
+    <button onclick="goBackToHome()">⬅️ Quay lại</button>
+  </div>
 </div>
+
+<div id="monthlySummaryPage" style="display: none; padding: 20px;">
+  <h2 style="margin-top: 60px;">📋 Bảng tổng kết cuối tháng</h2>
+  <div id="monthlySummaryTableWrapper"></div>
+  <br>
+  <button onclick="goBackToHome()">🔙 Quay lại</button>
+</div>
+</div>
+
+<!-- Trang riêng cho QR -->
+<div id="qrPage" style="display: none;">
+  <h2>📸 Chấm công bằng mã QR</h2>
+
+  <!-- Nếu là Admin thì hiển thị mã QR -->
+  <div id="fixedQRAdmin" style="display: none;">
+    <h3>🖨️ Mã QR cố định (dán ở cổng)</h3>
+    <canvas id="fixedQRCode"></canvas>
+  </div>
+  
+  <!-- Nhân viên quét mã QR -->
+  <div id="universalQRScanArea">
+    <h3>📲 Quét mã QR tại cổng</h3>
+    <select id="shiftType">
+      <option value="Sáng">Ca sáng</option>
+      <option value="Chiều">Ca chiều</option>
+    </select>
+    <br><br>
+    <video id="universalQRPreview" style="width: 300px;"></video>
+  </div>
+
+  <br><br>
+  <button onclick="goBackFromQR()">⬅️ Quay lại</button>
+</div>
+
+<div id="personalPage" style="display: none; padding: 20px;">
+  <!-- Avatar -->
+  <div style="text-align: center;">
+  <h2 id="personalTitle" style="text-align: left; margin-bottom: 10px;">📇 TRANG CÁ NHÂN</h2>
+    <img id="personalAvatar" src="avatar.jpg" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%;">
+    <h3>Xin chào: <span id="personalUsername">Tên công nhân</span></h3>
+  </div>
+
+  <!-- Ca và lý do -->
+  <label for="personalShift">Chọn ca:</label>
+  <select id="personalShift">
+    <option value="Sáng">🌞 Sáng</option>
+    <option value="Chiều">🌇 Chiều</option>
+  </select>
+  <input id="personalReason" placeholder="Lý do nghỉ (nếu có)" />
+
+  <!-- Các nút -->
+  <button onclick="checkInFromPersonal()">✅ Vào làm</button>
+  <button onclick="checkOutFromPersonal()">⏰ Tan ca</button>
+  <button onclick="takeLeaveFromPersonal()">📌 Nghỉ phép</button>
+  <button onclick="clearHistoryFromPersonal()">🧹 Xoá lịch sử</button>
+  <button onclick="goBackToHome()">⬅️ Quay lại</button>
+
+  <!-- Lịch sử -->
+  <div id="personalWorkHistory"></div>
+  <div id="personalDailyStats"></div>
+  </div>
 </div>
 <script src="script.js"></script>
 <script src="employee_fullscreen.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
 </body>
 </html>
