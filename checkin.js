@@ -71,3 +71,18 @@ window.onload = function () {
     statusEl.style.color = "red";
   }
 };
+
+document.addEventListener("DOMContentLoaded", function () {
+  const email = localStorage.getItem("currentUserEmail");
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const user = users.find(u => u.email === email);
+
+  if (user) {
+    document.getElementById("qrResultName").textContent = user.name || "Không rõ";
+    document.getElementById("qrResultShift").textContent = user.shift || "Chưa chọn ca";
+    document.getElementById("qrResultStatus").textContent = "✅ Đã chấm công";
+    document.getElementById("qrResultAvatar").src = user.avatar || "avatar.png";
+  } else {
+    document.getElementById("qrResultStatus").textContent = "❌ Không tìm thấy người dùng";
+  }
+});
