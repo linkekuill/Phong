@@ -7,9 +7,9 @@ window.onload = function () {
   const today = now.toLocaleDateString('vi-VN');
 
   const savedUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-const email = savedUser.email;
-const users = JSON.parse(localStorage.getItem("users")) || [];
-const user = users.find(u => u.email === email);
+  const email = savedUser.email;
+  const users = JSON.parse(localStorage.getItem("users")) || {};
+  const user = users[email];
 
   const avatarEl = document.getElementById("qrResultAvatar");
   const nameEl = document.getElementById("qrResultName");
@@ -27,8 +27,8 @@ const user = users.find(u => u.email === email);
 
   document.getElementById("resultBox").style.display = "flex";
 
-  avatarEl.src = user.avatar || "avatar.png";
-  nameEl.textContent = user.name;
+  avatarEl.src = savedUser.avatar || "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png";
+  nameEl.textContent = "👤 Tên: " + user.name;
 
   const key = `attendance_${email}`;
   const data = JSON.parse(localStorage.getItem(key)) || {};
@@ -45,6 +45,8 @@ const user = users.find(u => u.email === email);
     data[today][ca][loai] = timeStr;
     localStorage.setItem(key, JSON.stringify(data));
     localStorage.setItem(hideKey, "1");
+    savedUser.shift = (ca === "caSang") ? "Ca sáng" : "Ca chiều";
+    localStorage.setItem("currentUser", JSON.stringify(savedUser));
   }
 
   if (currentTime < 7) {
