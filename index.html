@@ -161,7 +161,6 @@
     <h3>Xin chào: <span id="personalUsername">Tên công nhân</span></h3>
   </div>
 
-  <!-- Ca và lý do -->
   <label for="personalShift">Chọn ca:</label>
   <select id="personalShift">
     <option value="Sáng">🌞 Sáng</option>
@@ -169,21 +168,19 @@
   </select>
   <input id="personalReason" placeholder="Lý do nghỉ (nếu có)" />
 
-  <!-- Các nút -->
-  <button onclick="checkInFromPersonal()">✅ Vào làm</button>
-  <button onclick="checkOutFromPersonal()">⏰ Tan ca</button>
-  <button onclick="takeLeaveFromPersonal()">📌 Nghỉ phép</button>
-  <button onclick="clearHistoryFromPersonal()">🧹 Xoá lịch sử</button>
+  <br><br>
+  <button onclick="document.getElementById('shift').value = document.getElementById('personalShift').value; document.getElementById('reason').value = document.getElementById('personalReason').value; checkIn()">✅ Vào làm</button>
+
+  <button onclick="document.getElementById('shift').value = document.getElementById('personalShift').value; document.getElementById('reason').value = document.getElementById('personalReason').value; checkOut()">⏰ Tan ca</button>
+
+  <button onclick="document.getElementById('shift').value = document.getElementById('personalShift').value; document.getElementById('reason').value = document.getElementById('personalReason').value; takeLeave()">📌 Nghỉ phép</button>
+
+  <button onclick="clearHistory()">🧹 Xoá lịch sử</button>
   <button onclick="goBackToHome()">⬅️ Quay lại</button>
 
-  <!-- Lịch sử -->
-  <div id="personalWorkHistory"></div>
-  <div id="personalDailyStats"></div>
-  </div>
+  <div id="history"></div>
+  <div id="stats"></div>
 </div>
-<script src="script.js"></script>
-<script src="checkin.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

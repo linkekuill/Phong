@@ -1,5 +1,14 @@
 let currentUser = null;
 
+function checkSession() {
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  if (currentUser) {
+    showApp();
+  } else {
+    showLogin();
+  }
+}
+
 function showLogin() {
   document.getElementById("loginScreen").style.display = "block";
   document.getElementById("registerScreen").style.display = "none";
@@ -522,25 +531,103 @@ function showPersonalPage() {
 }
 
 function checkInFromPersonal() {
-  document.getElementById("shift").value = document.getElementById("personalShift").value;
-  document.getElementById("reason").value = document.getElementById("personalReason").value;
-  checkIn(); // dùng chung với JS chính
+  const shift = document.getElementById("personalShift").value;
+  const reason = document.getElementById("personalReason").value.trim();
+  const now = new Date();
+  const day = now.toLocaleDateString("vi-VN");
+  const time = now.toLocaleTimeString("vi-VN");
+  const weekday = now.toLocaleDateString("vi-VN", { weekday: 'long' });
+  const monthYear = `${now.getMonth() + 1}/${now.getFullYear()}`;
+
+  let data = JSON.parse(localStorage.getItem("entries") || "[]");
+
+  // Kiểm tra trùng
+  const existing = data.find(e =>
+    e.email === currentUser.email &&
+    e.day === day &&
+    e.type === "Vào"
+  );
+  if (existing) {
+    alert("🚫 Bạn đã chấm công VÀO hôm nay!");
+    return;
+  }
+
+  data.push({
+    name: currentUser.name,
+    email: currentUser.email,
+    type: "Vào",
+    shift,
+    reason,
+    day,
+    time,
+    weekday,
+    monthYear
+  });
+
+  localStorage.setItem("entries", JSON.stringify(data));
+  renderPersonalStats();
 }
 
 function checkOutFromPersonal() {
-  document.getElementById("shift").value = document.getElementById("personalShift").value;
-  document.getElementById("reason").value = document.getElementById("personalReason").value;
-  checkOut();
+  const shift = document.getElementById("personalShift").value;
+  const reason = document.getElementById("personalReason").value.trim();
+  const now = new Date();
+  const day = now.toLocaleDateString("vi-VN");
+  const time = now.toLocaleTimeString("vi-VN");
+  const weekday = now.toLocaleDateString("vi-VN", { weekday: 'long' });
+  const monthYear = `${now.getMonth() + 1}/${now.getFullYear()}`;
+
+  let data = JSON.parse(localStorage.getItem("entries") || "[]");
+
+  // Kiểm tra trùng
+  const existing = data.find(e =>
+    e.email === currentUser.email &&
+    e.day === day &&
+    e.type === "Vào"
+  );
+  if (existing) {
+    alert("🚫 Bạn đã chấm công VÀO hôm nay!");
+    return;
+  }
+
+  data.push({
+    name: currentUser.name,
+    email: currentUser.email,
+    type: "Vào",
+    shift,
+    reason,
+    day,
+    time,
+    weekday,
+    monthYear
+  });
+
+  localStorage.setItem("entries", JSON.stringify(data));
+  renderPersonalStats();
 }
 
 function takeLeaveFromPersonal() {
-  document.getElementById("shift").value = document.getElementById("personalShift").value;
-  document.getElementById("reason").value = document.getElementById("personalReason").value;
-  takeLeave();
+  const reason = document.getElementById("personalReason").value.trim();
+  const shift = document.getElementById("personalShift").value;
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (!user || !reason) return;
+  const now = new Date();
+  const log = {
+    type: "Nghỉ",
+    reason: reason,
+    date: now.toLocaleDateString("vi-VN"),
+    shift: shift
+  };
+  saveWorkHistory(user.email, log);
+  updatePersonalStats();
 }
 
 function clearHistoryFromPersonal() {
-  clearHistory(); // dùng chung
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (!user) return;
+  localStorage.removeItem(`history_${user.email}`);
+  renderWorkHistory(user.email, "personalWorkHistory");
+  updatePersonalStats();
 }
 
 function renderPersonalStats() {
@@ -548,7 +635,7 @@ function renderPersonalStats() {
   const today = new Date().toLocaleDateString("vi-VN");
   const shift = document.getElementById("personalShift").value;
 
-  const filtered = history.filter(e => e.email === currentUser.email && e.date === today && e.shift === shift);
+  const filtered = history.filter(e => e.email === currentUser.email && e.day === today && e.shift === shift);
 
   const checkInCount = filtered.filter(e => e.type === "Vào").length;
   const checkOutCount = filtered.filter(e => e.type === "Ra").length;
@@ -558,7 +645,7 @@ function renderPersonalStats() {
   const container = document.getElementById("personalWorkHistory");
   container.innerHTML = "<h3>📜 Lịch sử chấm công</h3>" + (
     filtered.map(e =>
-      `<div>📅 ${e.day} | 🕒 ${e.time}<br>👉 ${e.type} | ${e.shift} ${e.reason ? `📌 ${e.reason}` : ""}</div>`
+      `<div>📅 ${e.date} | 🕒 ${e.time}<br>👉 ${e.type} | ${e.shift} ${e.reason ? `📌 ${e.reason}` : ""}</div>`
     ).join("") || "<p>Chưa có dữ liệu</p>"
   );
 
@@ -580,110 +667,4 @@ function showMonthlySummary() {
   document.getElementById("monthlySummaryPage").style.display = "block";
 
   summarizeMonth();
-}
-
-function showQRPage() {
-  hideAllSections(); // Ẩn các phần khác
-  document.getElementById("qrPage").style.display = "block";
-
-  const qrBtn = document.getElementById("qrCheckinBtn");
-  if (qrBtn) qrBtn.style.display = "none";
-
-  // Nếu là admin thì hiển thị QR cố định
-  if (currentUser && currentUser.email === "admin@company.com") {
-    document.getElementById("fixedQRAdmin").style.display = "block";
-
-    // Đợi DOM render xong rồi mới tạo QR
-    setTimeout(() => {
-      new QRious({
-        element: document.getElementById("fixedQRCode"),
-        value: "CHECKIN@CONG",
-        size: 250
-      });
-    }, 100); // đợi 100ms
-  } else {
-    document.getElementById("fixedQRAdmin").style.display = "none";
-  }
-
-  startUniversalQRScanner(); // Nhân viên bắt đầu quét
-}
-
-function startUniversalQRScanner() {
-  const scanner = new Instascan.Scanner({ video: document.getElementById('universalQRPreview') });
-  scanner.addListener('scan', function (content) {
-    if (content === "CHECKIN@CONG") {
-      const shift = document.getElementById("shiftType").value;
-      const now = new Date().toLocaleString();
-      alert(`✅ Đã chấm công ca ${shift} lúc ${now}`);
-
-      const logs = JSON.parse(localStorage.getItem("timeLogs") || "[]");
-      logs.push({
-        user: currentUser.email,
-        type: `Vào - ${shift}`,
-        time: now
-      });
-      localStorage.setItem("timeLogs", JSON.stringify(logs));
-
-      // Gán dữ liệu cho hiển thị
-      currentUser.status = "✅ Đã chấm công";
-      currentUser.shift = shift;
-      showQRResult(currentUser);  // Gọi hàm hiển thị
-    } else {
-      alert("❌ Mã QR không hợp lệ");
-      showQRResult(null); // Gọi để hiển thị trạng thái thất bại
-    }
-  });
-
-  Instascan.Camera.getCameras().then(cameras => {
-    if (cameras.length > 0) {
-      scanner.start(cameras[0]);
-    } else {
-      alert("Không tìm thấy camera");
-    }
-  });
-}
-
-function goBackFromQR() {
-  document.getElementById("qrPage").style.display = "none";
-    const qrBtn = document.getElementById("qrCheckinBtn");
-  if (qrBtn) qrBtn.style.display = "inline-block";
-
-  showApp(); // hoặc bất kỳ phần nào bạn dùng để hiển thị lại giao diện chính
-}
-
-function hideAllSections() {
-  const sections = [
-    "app", "loginScreen", "registerScreen", "personalPage",
-    "monthlySummaryPage", "fullscreenEmployeeListWrapper",
-    "qrPage", "managerArea"
-  ];
-  sections.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = "none";
-  });
-}
-
-const savedUser = localStorage.getItem("currentUser");
-if (savedUser) {
-  currentUser = JSON.parse(savedUser);
-}
-
-function showQRResult(user) {
-  const nameEl = document.getElementById("qrStatusName");
-  const shiftEl = document.getElementById("qrShift");
-  const textEl = document.getElementById("qrStatusText");
-  const avatarEl = document.getElementById("qrStatusAvatar");
-
-  if (!user) {
-    nameEl.innerText = "Không rõ";
-    shiftEl.innerText = "Ca làm: Chưa rõ";
-    textEl.innerText = "❌ Không hợp lệ";
-    avatarEl.src = "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png";
-    return;
-  }
-
-  nameEl.innerText = user.name || "Không rõ";
-  shiftEl.innerText = "Ca làm: " + (user.shift || "Chưa rõ");
-  textEl.innerText = user.status || "Đã chấm công";
-  avatarEl.src = user.avatar || "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png";
 }

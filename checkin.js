@@ -59,6 +59,7 @@ window.onload = function () {
     shiftEl.textContent = "Ca sáng";
     timeEl.textContent = timeStr;
     statusEl.innerHTML = `✅ Đã chấm công VÀO ca sáng lúc ${timeStr}`;
+    saveToEntries("Vào (QR)", "Sáng", "");
     statusEl.style.color = "green";
   } else if (currentTime < 11) {
     shiftEl.textContent = "Ca sáng";
@@ -70,6 +71,7 @@ window.onload = function () {
     shiftEl.textContent = "Ca sáng";
     timeEl.textContent = timeStr;
     statusEl.innerHTML = `✅ Đã chấm công TAN ca sáng lúc ${timeStr}`;
+    saveToEntries("Ra (QR)", "Sáng", "");
     statusEl.style.color = "green";
   } else if (currentTime < 13) {
     shiftEl.textContent = "Ca chiều";
@@ -81,6 +83,7 @@ window.onload = function () {
     shiftEl.textContent = "Ca chiều";
     timeEl.textContent = timeStr;
     statusEl.innerHTML = `✅ Đã chấm công VÀO ca chiều lúc ${timeStr}`;
+    saveToEntries("Vào (QR)", "Chiều", "");
     statusEl.style.color = "green";
   } else if (currentTime < 17) {
     shiftEl.textContent = "Ca chiều";
@@ -92,6 +95,7 @@ window.onload = function () {
     shiftEl.textContent = "Ca chiều";
     timeEl.textContent = timeStr;
     statusEl.innerHTML = `✅ Đã chấm công TAN ca chiều lúc ${timeStr}`;
+    saveToEntries("Ra (QR)", "Chiều", "");
     statusEl.style.color = "green";
   } else {
     shiftEl.textContent = "Hết giờ";
@@ -100,3 +104,36 @@ window.onload = function () {
     statusEl.style.color = "red";
   }
 };
+
+function saveToEntries(typeText, ca) {
+  const savedUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const { name, email } = savedUser;
+  if (!email || !name) return;
+
+  const now = new Date();
+  const day = now.toLocaleDateString("vi-VN");
+  const time = now.toLocaleTimeString("vi-VN");
+  const weekday = now.toLocaleDateString("vi-VN", { weekday: 'long' });
+  const monthYear = `${now.getMonth() + 1}/${now.getFullYear()}`;
+
+  const entry = {
+    name,
+    email,
+    type: typeText + " (bằng mã QR)",
+    shift: (ca === "caSang") ? "Sáng" : "Chiều",
+    reason: "",
+    day,
+    time,
+    weekday,
+    monthYear
+  };
+
+  let data = JSON.parse(localStorage.getItem("entries") || "[]");
+
+  // Chống ghi đè 2 lần cùng loại
+  const exists = data.find(e => e.email === email && e.day === day && e.type === entry.type);
+  if (!exists) {
+    data.push(entry);
+    localStorage.setItem("entries", JSON.stringify(data));
+  }
+}
