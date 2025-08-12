@@ -60,6 +60,7 @@ window.onload = function () {
     timeEl.textContent = timeStr;
     statusEl.innerHTML = `✅ Đã chấm công VÀO ca sáng lúc ${timeStr}`;
     saveToEntries("Vào (QR)", "Sáng", "");
+    renderStats();
     statusEl.style.color = "green";
   } else if (currentTime < 11) {
     shiftEl.textContent = "Ca sáng";
@@ -72,6 +73,7 @@ window.onload = function () {
     timeEl.textContent = timeStr;
     statusEl.innerHTML = `✅ Đã chấm công TAN ca sáng lúc ${timeStr}`;
     saveToEntries("Ra (QR)", "Sáng", "");
+    renderStats();
     statusEl.style.color = "green";
   } else if (currentTime < 13) {
     shiftEl.textContent = "Ca chiều";
@@ -84,6 +86,7 @@ window.onload = function () {
     timeEl.textContent = timeStr;
     statusEl.innerHTML = `✅ Đã chấm công VÀO ca chiều lúc ${timeStr}`;
     saveToEntries("Vào (QR)", "Chiều", "");
+    renderStats();
     statusEl.style.color = "green";
   } else if (currentTime < 17) {
     shiftEl.textContent = "Ca chiều";
@@ -96,6 +99,7 @@ window.onload = function () {
     timeEl.textContent = timeStr;
     statusEl.innerHTML = `✅ Đã chấm công TAN ca chiều lúc ${timeStr}`;
     saveToEntries("Ra (QR)", "Chiều", "");
+    renderStats();
     statusEl.style.color = "green";
   } else {
     shiftEl.textContent = "Hết giờ";

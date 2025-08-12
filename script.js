@@ -273,10 +273,10 @@ function renderStats() {
   const userData = data.filter(e => e.email === currentUser.email && e.day === day);
 
   // Tách dữ liệu theo ca
-  let caSangVao = formatTime(userData.find(e => e.shift === "Sáng" && e.type === "Vào"));
-  let caSangRa  = formatTime(userData.find(e => e.shift === "Sáng" && e.type === "Ra"));
-  let caChieuVao = formatTime(userData.find(e => e.shift === "Chiều" && e.type === "Vào"));
-  let caChieuRa  = formatTime(userData.find(e => e.shift === "Chiều" && e.type === "Ra"));
+  let caSangVao = formatTime(userData.find(e => e.shift === "Sáng" && e.type.startsWith("Vào")));
+  let caSangRa  = formatTime(userData.find(e => e.shift === "Sáng" && e.type.startsWith("Ra")));
+  let caChieuVao = formatTime(userData.find(e => e.shift === "Chiều" && e.type.startsWith("Vào")));
+  let caChieuRa  = formatTime(userData.find(e => e.shift === "Chiều" && e.type.startsWith("Ra")));
 
   let nghiData = userData.find(e => e.type === "Nghỉ");
   let nghiCa = nghiData?.shift || "";
