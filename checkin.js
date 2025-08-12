@@ -125,7 +125,7 @@ function saveToEntries(typeText, ca) {
     day,
     time,
     weekday,
-    monthYear
+    monthYear,
     method: "QR"
   };
 
