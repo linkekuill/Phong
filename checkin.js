@@ -126,6 +126,7 @@ function saveToEntries(typeText, ca) {
     time,
     weekday,
     monthYear
+    method: "QR"
   };
 
   let data = JSON.parse(localStorage.getItem("entries") || "[]");

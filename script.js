@@ -187,7 +187,8 @@ function saveEntry(type) {
   const existing = data.find(e =>
     e.email === currentUser.email &&
     e.day === day &&
-    e.type === type
+    e.type === type &&
+    e.shift === shift
   );
 
   if (existing) {
@@ -242,6 +243,10 @@ function renderHistory() {
 function renderStats() {
   const { now, day, weekday, monthYear } = getTimeInfo();
 
+  function formatTime(entry) {
+    if (!entry) return "-";
+    return entry.time + (entry.method === "QR" ? " QR" : "");
+  }
   // Reset lúc 7h sáng hôm nay
 // Chuỗi ngày đầy đủ: YYYY-MM-DD
   const todayString = now.getFullYear() + "-" +
