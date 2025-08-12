@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -10,25 +10,27 @@
 
 <div id="pageHeader">
   <div class="left-header">
-    <span class="gradient-title">Trang chu</span>
+    <span>Trang chu</span>
   </div>
-  <div class="top-right-buttons">
-    <button id="profileBtn">👤</button>
-<button id="logoutBtn" onclick="logout()">⛔</button>
+  <div class="top-right-buttons" id="userMenu" style="display: none ;">
+    <button id="notificationBtn" class="icon-btn" onclick="openNotificationPopup()">🔔</button>
+    <span id="notificationBadge" class="notification-wrapper">1</span>
+    <button id="profileBtn" class="icon-btn">👤</button>
+    <button id="logoutBtn" class="icon-btn" onclick="toggleLogoutMenu()">⛔</button>
   </div>
 </div>
 
-<div class="header-bg" id="mainTitle">
-  <span style="font-size: 22px; font-weight: bold;">📘 Hệ thống chấm công</span>
+<div class="header-bg"></div>
+<div id="mainTitle" style="display: none ;">
+  <span class="mainTitleText" id="mainTitleText"></span>
 </div>
-
   
 <!-- Đăng nhập -->
 <div id="loginScreen">
   <h2>🔐 Đăng nhập</h2>
-  <input type="text" id="loginEmail" placeholder="Email"><br>
-  <input type="password" id="loginPassword" placeholder="Mật khẩu"><br>
-  <button onclick="login()">Đăng nhập</button>
+  <input type="text" class="led-border" id="loginEmail" placeholder="Email"><br>
+  <input type="password" class="led-border" id="loginPassword" placeholder="Mật khẩu"><br>
+  <button class="led-button" onclick="login()">Đăng nhập</button>
   <p>Chưa có tài khoản? <a href="#" onclick="showRegister()">Đăng ký</a></p>
 </div>
 
@@ -49,25 +51,52 @@
   <h2>👋 Xin chào, <span id="userName"></span></h2>
 
   <div id="actionArea">
-    <select id="shift">
-      <option value="Sáng">☀️ Sáng</option>
-      <option value="Chiều">🌙 Chiều</option>
-    </select><br>
-    <input type="text" id="reason" placeholder="Lý do nghỉ (nếu có)"><br>
-    <button onclick="showPersonalPage()">👤 Trang cá nhân</button>
-    <button onclick="checkIn()">✅ Vào làm</button>
-    <button onclick="checkOut()">⏰ Tan ca</button>
-    <button onclick="takeLeave()">📌 Nghỉ phép</button>
-    <button onclick="clearHistory()">🧹 Xoá lịch sử</button>
-    <button onclick="showQRPage()">📸 QR chấm công</button>
+    <button onclick="showPersonalPage()">📇 Chấm công</button>
+    <button onclick="
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  const entries = JSON.parse(localStorage.getItem('entries') || '[]');
+  const userEntries = entries.filter(e => e.email === currentUser?.email);
+  document.getElementById('history').innerHTML =
+    userEntries.length
+    ? `<table class='full-table'>
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Thứ</th>
+            <th>Ngày</th>
+            <th>Ca</th>
+            <th>Loại</th>
+            <th>Giờ</th>
+          </tr>
+        </thead>
+        <tbody>${
+          userEntries.map((e, i) =>`
+            <tr>
+              <td>${i + 1}</td>
+              <td>${e.weekday || '-'}</td>
+              <td>${e.day || '-'}</td>
+              <td>${e.shift || '-'}</td>
+              <td>${e.type}</td>
+              <td>${e.time}</td>
+            </tr>
+          `).join('')
+        }</tbody>
+      </table>`
+    : '<p>Chưa có lịch sử.</p>';
+  document.getElementById('app').style.display='none';
+  document.getElementById('historyPage').style.display='block';
+  document.getElementById('mainTitle').style.display = 'none';
+  document.getElementById('mainTitleText').style.display = 'none';
+  document.getElementById('pageHeader').style.display = 'none';
+">🕓 Lịch sử</button>
   </div>
   
-    <div id="managerArea" style="display:none;">
+  <div id="managerArea" style="display:none;">
     <button onclick="showMonthlySummary()">📊 Tổng kết cuối tháng</button>
     <button onclick="showFullScreenEmployee()">📋 Xem toàn bộ công nhân</button>
     <button id="qrCheckinBtn" onclick="showQRPage()">📸 QR chấm công</button>
   </div>
-  </div>
+</div>
 
 <!-- Popup Trang cá nhân -->
 <div id="profilePopup" class="popup">
@@ -97,9 +126,22 @@
 </div>
 
 <!-- Giao diện toàn màn hình danh sách công nhân -->
-<div id="fullscreenEmployeeListWrapper" style="display: none; padding: 10px; box-sizing: border-box; width: 100vw; max-width: 100vw;">
+<div id="fullscreenEmployeeListWrapper" style="display: none; padding: 0px; box-sizing: border-box; width: 100vw; max-width: 100vw;">
   <!-- Tiêu đề riêng -->
-  <h3 style="text-align: center; font-size: 20px; margin-bottom: 10px;">
+  <h3 style="
+  position: fixed;
+  top: -5px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 20px;
+  margin: 0;
+  padding: 15px;
+  background: var(--bg);
+  color: var(--text);
+  z-index: 1000;
+  transform: translateX( -20px);
+">
     📋 Danh sách toàn bộ công nhân
   </h3>
 
@@ -109,7 +151,22 @@
     id="searchInput"
     oninput="filterEmployeeTable()"
     placeholder="🔍 Tìm công nhân..."
-    style="width: 100%; max-width: 400px; padding: 10px 12px; margin: 10px auto; display: block; font-size: 16px; border: 2px solid orange; border-radius: 10px; box-sizing: border-box;">
+    style="
+    position: fixed;
+    top: 40px; /* đẩy xuống dưới tiêu đề */
+    left: 49%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 340px;
+    padding: 10px 10px;
+    font-size: 16px;
+    border: 2px solid orange;
+    border-radius: 10px;
+    box-sizing: border-box;
+    background: var(--bg);
+    color: var(--text);
+    z-index: 1000;
+">
 
   <!-- Bảng mới sẽ được JS chèn vào đây -->
   <div id="fullscreenTableWrapper" style="overflow-x: auto;"></div>
@@ -120,11 +177,26 @@
   </div>
 </div>
 
-<div id="monthlySummaryPage" style="display: none; padding: 20px;">
-  <h2 style="margin-top: 60px;">📋 Bảng tổng kết cuối tháng</h2>
+<div id="monthlySummaryPage" style="display: none; padding: 10px;">
+  <h2 style="
+  position: fixed;
+  top: 0px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 30px;
+  margin: 0;
+  padding: 15px;
+  background: var(--bg);
+  color: var(--text);
+  z-index: 1000;
+  transform: translateX( -20px);
+">📋 Bảng tổng kết cuối tháng</h2>
   <div id="monthlySummaryTableWrapper"></div>
   <br>
-  <button onclick="goBackToHome()">🔙 Quay lại</button>
+  <div class="back-button-container" style="text-align: right; margin: 20px 10px;">
+    <button onclick="goBackToHome()">🔙 Quay lại</button>
+  </div>
 </div>
 </div>
 
@@ -156,9 +228,15 @@
 <div id="personalPage" style="display: none; padding: 20px;">
   <!-- Avatar -->
   <div style="text-align: center;">
-  <h2 id="personalTitle" style="text-align: left; margin-bottom: 10px;">📇 TRANG CÁ NHÂN</h2>
-    <img id="personalAvatar" src="avatar.jpg" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%;">
-    <h3>Xin chào: <span id="personalUsername">Tên công nhân</span></h3>
+  <h2 id="personalTitle" class="header-fixed">📇 Chấm công</h2>
+  <div class="status-container">
+    <div id="statusLine1"></div>
+    <div id="statusLine2"></div>
+    <div id="statusLine3"></div>
+    <div id="statusLine4"></div>
+  </div>
+    <img id="personalAvatar" src="https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png" alt="Avatar" class="avatar-img" style="position:relative; z-index: 1000; top: 120px;">
+    <h3 style="margin-top: 120px">Xin chào: <span id="personalUsername">Tên công nhân</span></h3>
   </div>
 
   <label for="personalShift">Chọn ca:</label>
@@ -169,18 +247,149 @@
   <input id="personalReason" placeholder="Lý do nghỉ (nếu có)" />
 
   <br><br>
-  <button onclick="document.getElementById('shift').value = document.getElementById('personalShift').value; document.getElementById('reason').value = document.getElementById('personalReason').value; checkIn()">✅ Vào làm</button>
-
-  <button onclick="document.getElementById('shift').value = document.getElementById('personalShift').value; document.getElementById('reason').value = document.getElementById('personalReason').value; checkOut()">⏰ Tan ca</button>
-
-  <button onclick="document.getElementById('shift').value = document.getElementById('personalShift').value; document.getElementById('reason').value = document.getElementById('personalReason').value; takeLeave()">📌 Nghỉ phép</button>
-
+  <!-- Nút chấm công -->
+  <button onclick="checkIn()">✅ Vào làm</button>
+  <button onclick="checkOut()">⏰ Tan ca</button>
+  <button onclick="takeLeave()">📌 Nghỉ phép</button>
   <button onclick="clearHistory()">🧹 Xoá lịch sử</button>
   <button onclick="goBackToHome()">⬅️ Quay lại</button>
-
-  <div id="history"></div>
-  <div id="stats"></div>
 </div>
-  <script src="script.js"></script>
+  
+<!-- 🔹 Trang lịch sử riêng -->
+<div id="historyPage" style="display: none;">
+  <h2 style="margin-top: 10px; padding: 0px 25px; position:relative; z-index: 0;">📅 Lịch sử chấm công</h2>
+  <div id="history" class="scroll-table"></div>
+  <br>
+  <button style="position: fixed; right: 10px;" onclick="document.getElementById('historyPage').style.display='none'; document.getElementById('app').style.display='block';
+    document.getElementById('mainTitle').style.display = 'block';
+    document.getElementById('mainTitleText').style.display = 'block';
+    document.getElementById('pageHeader').style.display = 'flex';">
+    🔙 Quay lại
+  </button>
+</div>
+</div>
+<div id="expandableMenu">
+  <button id="mainFab">➕</button>
+  <div id="menuButtons">
+    <button id="toggleEffect">🌈</button>
+    <button id="themeToggleBtn">🌙</button>
+  </div>
+</div>
+<!-- Menu đăng xuất -->
+<div id="logoutPopup" class="expandable-logout">
+  <div class="popup-box">
+    <p>Bạn có muốn đăng xuất tài khoản không?</p>
+    <div class="popup-actions">
+      <button id="confirmLogout">✅ Có</button>
+      <button id="cancelLogout">❌ Không</button>
+    </div>
+  </div>
+</div>
+
+<!-- Popup thông báo -->
+<div id="notificationPopup" class="notification-popup">
+  <div class="popup-box">
+    <span class="close-btn" onclick="closeNotificationPopup()">&times;</span>
+    <h2>📢 Thông báo</h2>
+    <div id="notificationContent">
+      Không có thông báo.
+    </div>
+  </div>
+</div>
+<div id="overlayBlur" class="popup-blur-overlay"></div>
+
+<script src="script.js">
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const toggleBtn = document.getElementById("toggleEffect");
+
+    if (toggleBtn) {
+      let effectOn = false;
+      toggleBtn.addEventListener("click", () => {
+        effectOn = !effectOn;
+        document.body.classList.toggle("effect-theme", effectOn);
+        toggleBtn.title = effectOn ? "Tắt hiệu ứng" : "Bật hiệu ứng";
+      });
+    }
+  });
+</script>
+<script>
+  // Toggle mở rộng menu khi bấm nút ➕
+  document.getElementById("mainFab").addEventListener("click", function () {
+  document.getElementById("expandableMenu").classList.toggle("open");
+});
+</script>
+<script>
+  const logoutPopup = document.getElementById("logoutPopup");
+
+  function toggleLogoutMenu() {
+    logoutPopup.classList.toggle("active");
+    overlayBlur.classList.toggle("active");
+  }
+
+  document.getElementById("cancelLogout").onclick = () => {
+    logoutPopup.classList.remove("active");
+    overlayBlur.classList.remove("active");
+  };
+
+  document.getElementById("confirmLogout").onclick = () => {
+    logoutPopup.classList.remove("active");
+    overlayBlur.classList.remove("active");
+    setTimeout(() => {
+      localStorage.removeItem("currentUser");
+      window.location.href = "index.html";
+    }, 400);
+  };
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    const mainTitleText = document.getElementById("mainTitleText");
+    const mainTitle = document.getElementById("mainTitle");
+
+    if (currentUser) {
+      mainTitleText.textContent =
+        currentUser.email === "admin@company.com"
+          ? "Hệ thống quản lý"
+          : "Hệ thống công nhân";
+      mainTitle.style.display = "block";
+      document.getElementById("userMenu").style.display = "flex";
+    } else {
+      mainTitle.style.display = "none";
+      document.getElementById("userMenu").style.display = "none";
+    }
+  });
+</script>
+<script>
+  const notificationPopup = document.getElementById("notificationPopup");
+  const notificationBadge = document.getElementById("notificationBadge");
+
+  // Hiện badge nếu chưa đọc
+  if (localStorage.getItem('notificationSeen') === "false") {
+    notificationBadge.style.display = "inline-block";
+  }
+
+  // Mở popup khi bấm nút
+  document.getElementById("notificationBtn").addEventListener("click", () => {
+    notificationPopup.classList.toggle("active");
+    overlayBlur.classList.toggle("active");
+
+    notificationBadge.style.display = "none";
+    localStorage.setItem("notificationSeen", "true");
+
+    document.getElementById("notificationContent").innerHTML = `
+      🎉 <strong>Chúc mừng bạn đã đăng nhập thành công.</strong><br>
+      🛠️ Chào mừng bạn đến với hệ thống chấm công tự động hoá.
+    `;
+  });
+
+  // Đóng popup
+  function closeNotificationPopup() {
+    notificationPopup.classList.remove("active");
+    overlayBlur.classList.remove("active");
+  }
+</script>
+
 </body>
 </html>

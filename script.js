@@ -1,13 +1,16 @@
 let currentUser = null;
 
-function checkSession() {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  if (currentUser) {
-    showApp();
-  } else {
-    showLogin();
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme) {
+    document.documentElement.setAttribute("data-theme", savedTheme);
   }
-}
+
+  const btn = document.getElementById("themeToggleBtn");
+  if (btn) {
+    btn.addEventListener("click", toggleTheme);
+  }
+});
 
 function showLogin() {
   document.getElementById("loginScreen").style.display = "block";
@@ -72,6 +75,10 @@ function login() {
 
   // Lưu currentUser vào localStorage
   localStorage.setItem("currentUser", JSON.stringify(currentUser));
+  localStorage.setItem("notificationSeen", "false");
+  // Nếu badge đang có trên trang, hiển thị lại ngay không cần reload
+   const badge = document.getElementById("notificationBadge");
+if (badge) badge.style.display = "inline-block";
 
   // Hiển thị avatar nếu có
   if (currentUser.avatar) {
@@ -89,10 +96,21 @@ function login() {
 
   // Nếu là admin thì hiện các nút quản lý
   if (currentUser.email === "admin@company.com") {
-    document.getElementById("managerArea").style.display = "block";
+  document.getElementById("managerArea").style.display = "block";
   } else {
-    document.getElementById("managerArea").style.display = "none";
-  }
+  document.getElementById("managerArea").style.display = "none";
+}
+
+  const mainTitleText = document.getElementById("mainTitleText");
+  mainTitleText.textContent =
+    currentUser.email === "admin@company.com"
+      ? "Hệ thống quản lý"
+      : "Hệ thống công nhân";
+      
+// ✅ Hiện tiêu đề và menu người dùng
+document.getElementById("mainTitle").style.display = "block";
+document.getElementById("userMenu").style.display = "flex";
+document.getElementById("mainTitleText").style.display = "block";
 
   showApp();
   renderHistory();
@@ -126,8 +144,8 @@ function getTimeInfo() {
 }
 
 function saveEntry(type) {
-  const shift = document.getElementById("shift").value;
-  const reason = document.getElementById("reason").value.trim();
+  const shift = document.getElementById("personalShift").value;
+  const reason = document.getElementById("personalReason").value.trim();
   const { now, day, time, weekday, monthYear } = getTimeInfo();
 
   const hour = now.getHours();
@@ -222,23 +240,63 @@ function renderHistory() {
 }
 
 function renderStats() {
-  const list = document.getElementById("stats");
-  let data = JSON.parse(localStorage.getItem("entries") || "[]");
-  const userData = data.filter(e => e.email === currentUser.email);
+  const { now, day, weekday, monthYear } = getTimeInfo();
 
-  const grouped = {};
-  for (let e of userData) {
-    const key = `${e.day} (${e.shift})`;
-    if (!grouped[key]) grouped[key] = { Vào: 0, Ra: 0, Nghỉ: 0 };
-    grouped[key][e.type]++;
+  // Reset lúc 7h sáng hôm nay
+// Chuỗi ngày đầy đủ: YYYY-MM-DD
+  const todayString = now.getFullYear() + "-" +
+    String(now.getMonth() + 1).padStart(2, '0') + "-" +
+    String(now.getDate()).padStart(2, '0');
+
+  const lastStatusDate = localStorage.getItem("statusDate");
+
+  if (lastStatusDate !== todayString && now.getHours() >= 7) {
+    // Lưu dữ liệu cũ vào lịch sử
+    let history = JSON.parse(localStorage.getItem("history") || "[]");
+    let entries = JSON.parse(localStorage.getItem("entries") || "[]");
+    if (entries.length > 0) {
+      history.push(...entries);
+      localStorage.setItem("history", JSON.stringify(history));
+    }
+    // Xóa dữ liệu hôm trước
+    localStorage.removeItem("entries");
+    localStorage.setItem("statusDate", day);
   }
 
-  list.innerHTML = Object.entries(grouped).map(([dateShift, stats]) =>
-    `<div class="stat">
-      📅 <b>${dateShift}</b><br>
-      ✅ Vào: ${stats.Vào} | ⏰ Ra: ${stats.Ra} | 📌 Nghỉ: ${stats.Nghỉ}
-    </div>`
-  ).join("") || "<p>Chưa có thống kê</p>";
+  // Lấy dữ liệu hôm nay của user
+  let data = JSON.parse(localStorage.getItem("entries") || "[]");
+  const userData = data.filter(e => e.email === currentUser.email && e.day === day);
+
+  // Tách dữ liệu theo ca
+  let caSangVao = userData.find(e => e.shift === "Sáng" && e.type === "Vào")?.time || "-";
+  let caSangRa  = userData.find(e => e.shift === "Sáng" && e.type === "Ra")?.time || "-";
+  let caChieuVao = userData.find(e => e.shift === "Chiều" && e.type === "Vào")?.time || "-";
+  let caChieuRa  = userData.find(e => e.shift === "Chiều" && e.type === "Ra")?.time || "-";
+
+  let nghiData = userData.find(e => e.type === "Nghỉ");
+  let nghiCa = nghiData?.shift || "";
+  let nghiLyDo = nghiData?.reason || "";
+
+  // Hiển thị
+  document.getElementById("statusLine1").textContent =
+    `Hôm nay | ${weekday} | ${day}`;
+
+  if (nghiData) {
+    document.getElementById("statusLine2").style.display = "none";
+    document.getElementById("statusLine3").style.display = "none";
+    document.getElementById("statusLine4").style.display = "block";
+    document.getElementById("statusLine4").textContent =
+      `Nghỉ: ca ${nghiCa} | Lý do: ${nghiLyDo}`;
+  } else {
+    document.getElementById("statusLine2").style.display = caSangVao !== "-" || caSangRa !== "-" ? "block" : "none";
+    document.getElementById("statusLine3").style.display = caChieuVao !== "-" || caChieuRa !== "-" ? "block" : "none";
+    document.getElementById("statusLine4").style.display = "none";
+
+    document.getElementById("statusLine2").textContent =
+      `Ca sáng: vào: ${caSangVao} | ra: ${caSangRa}`;
+    document.getElementById("statusLine3").textContent =
+      `Ca chiều: vào: ${caChieuVao} | ra: ${caChieuRa}`;
+  }
 }
 
 function showEmployeeList() {
@@ -331,7 +389,7 @@ function summarizeMonth() {
   document.getElementById("app").style.display = "none";
   document.getElementById("monthlySummaryPage").style.display = "block";
   document.getElementById("mainTitle").style.display = "none";
-  document.getElementById("pageHeader").style.display = "flex";
+  document.getElementById("pageHeader").style.display = "none";
 }
 
 function goBackToHome() {
@@ -353,7 +411,7 @@ function goBackToHome() {
   document.getElementById("mainTitle").style.display = "block";
   document.getElementById("mainTitle").style.textAlign = "left";
   document.getElementById("mainTitle").style.margin = "0";
-  document.getElementById("mainTitle").style.padding = "10px 20px";
+  document.getElementById("mainTitle").style.padding = "0px 0px";
   document.getElementById("pageHeader").style.display = "flex";
 
   // Nếu là admin thì hiện lại nút quản lý
@@ -390,17 +448,22 @@ const profileName = document.getElementById("profileName");
 const profilePhone = document.getElementById("profilePhone");
 const profileUsername = document.getElementById("profileUsername");
 const editBtn = document.getElementById("editBtn");
+const overlayBlur = document.getElementById("overlayBlur");
 
+// 👉 Mở/thu popup bằng toggle (giống đăng xuất)
 document.getElementById("profileBtn").addEventListener("click", () => {
-  profilePopup.classList.add("show");
+  profilePopup.classList.add("active");
+  overlayBlur.classList.add("active");
 
   // Gán avatar mỗi lần mở popup
-  document.getElementById("popupAvatar").src = currentUser.avatar || "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png";
+  document.getElementById("popupAvatar").src = currentUser.avatar || "https://em-content.zobj.net/thumbs/240/apple/354/bust-in-silhouette_1f464.png" ;
 });
 
-function closeProfilePopup() {
-  profilePopup.classList.remove("show");
-}
+// 👉 Đóng popup (nút X)
+document.querySelector("#profilePopup .close-btn").addEventListener("click", () => {
+  profilePopup.classList.remove("active");
+  overlayBlur.classList.remove("active");
+});
 
 // Đổi avatar
 function changeAvatar(event) {
@@ -530,134 +593,6 @@ function showPersonalPage() {
   renderPersonalStats();
 }
 
-function checkInFromPersonal() {
-  const shift = document.getElementById("personalShift").value;
-  const reason = document.getElementById("personalReason").value.trim();
-  const now = new Date();
-  const day = now.toLocaleDateString("vi-VN");
-  const time = now.toLocaleTimeString("vi-VN");
-  const weekday = now.toLocaleDateString("vi-VN", { weekday: 'long' });
-  const monthYear = `${now.getMonth() + 1}/${now.getFullYear()}`;
-
-  let data = JSON.parse(localStorage.getItem("entries") || "[]");
-
-  // Kiểm tra trùng
-  const existing = data.find(e =>
-    e.email === currentUser.email &&
-    e.day === day &&
-    e.type === "Vào"
-  );
-  if (existing) {
-    alert("🚫 Bạn đã chấm công VÀO hôm nay!");
-    return;
-  }
-
-  data.push({
-    name: currentUser.name,
-    email: currentUser.email,
-    type: "Vào",
-    shift,
-    reason,
-    day,
-    time,
-    weekday,
-    monthYear
-  });
-
-  localStorage.setItem("entries", JSON.stringify(data));
-  renderPersonalStats();
-}
-
-function checkOutFromPersonal() {
-  const shift = document.getElementById("personalShift").value;
-  const reason = document.getElementById("personalReason").value.trim();
-  const now = new Date();
-  const day = now.toLocaleDateString("vi-VN");
-  const time = now.toLocaleTimeString("vi-VN");
-  const weekday = now.toLocaleDateString("vi-VN", { weekday: 'long' });
-  const monthYear = `${now.getMonth() + 1}/${now.getFullYear()}`;
-
-  let data = JSON.parse(localStorage.getItem("entries") || "[]");
-
-  // Kiểm tra trùng
-  const existing = data.find(e =>
-    e.email === currentUser.email &&
-    e.day === day &&
-    e.type === "Vào"
-  );
-  if (existing) {
-    alert("🚫 Bạn đã chấm công VÀO hôm nay!");
-    return;
-  }
-
-  data.push({
-    name: currentUser.name,
-    email: currentUser.email,
-    type: "Vào",
-    shift,
-    reason,
-    day,
-    time,
-    weekday,
-    monthYear
-  });
-
-  localStorage.setItem("entries", JSON.stringify(data));
-  renderPersonalStats();
-}
-
-function takeLeaveFromPersonal() {
-  const reason = document.getElementById("personalReason").value.trim();
-  const shift = document.getElementById("personalShift").value;
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (!user || !reason) return;
-  const now = new Date();
-  const log = {
-    type: "Nghỉ",
-    reason: reason,
-    date: now.toLocaleDateString("vi-VN"),
-    shift: shift
-  };
-  saveWorkHistory(user.email, log);
-  updatePersonalStats();
-}
-
-function clearHistoryFromPersonal() {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (!user) return;
-  localStorage.removeItem(`history_${user.email}`);
-  renderWorkHistory(user.email, "personalWorkHistory");
-  updatePersonalStats();
-}
-
-function renderPersonalStats() {
-  const history = JSON.parse(localStorage.getItem("entries") || "[]");
-  const today = new Date().toLocaleDateString("vi-VN");
-  const shift = document.getElementById("personalShift").value;
-
-  const filtered = history.filter(e => e.email === currentUser.email && e.day === today && e.shift === shift);
-
-  const checkInCount = filtered.filter(e => e.type === "Vào").length;
-  const checkOutCount = filtered.filter(e => e.type === "Ra").length;
-  const leaveCount = filtered.filter(e => e.type === "Nghỉ").length;
-
-  // Hiển thị lịch sử làm việc
-  const container = document.getElementById("personalWorkHistory");
-  container.innerHTML = "<h3>📜 Lịch sử chấm công</h3>" + (
-    filtered.map(e =>
-      `<div>📅 ${e.date} | 🕒 ${e.time}<br>👉 ${e.type} | ${e.shift} ${e.reason ? `📌 ${e.reason}` : ""}</div>`
-    ).join("") || "<p>Chưa có dữ liệu</p>"
-  );
-
-  // Hiển thị thống kê
-  const stats = document.getElementById("personalDailyStats");
-  stats.innerHTML = `
-    <h3>📊 Thống kê theo ngày</h3>
-    <div>📅 ${today} (${shift})<br>
-    ✅ Vào: ${checkInCount} | ⏰ Ra: ${checkOutCount} | 📌 Nghỉ: ${leaveCount}</div>
-  `;
-}
-
 function showMonthlySummary() {
   document.getElementById("app").style.display = "none";
   document.getElementById("managerArea").style.display = "none";
@@ -667,4 +602,12 @@ function showMonthlySummary() {
   document.getElementById("monthlySummaryPage").style.display = "block";
 
   summarizeMonth();
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute("data-theme") || "light";
+  const next = current === "light" ? "dark" : "light";
+  html.setAttribute("data-theme", next);
+  localStorage.setItem("theme", next);
 }
