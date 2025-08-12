@@ -260,7 +260,7 @@ function renderStats() {
     }
     // Xóa dữ liệu hôm trước
     localStorage.removeItem("entries");
-    localStorage.setItem("statusDate", day);
+    localStorage.setItem("statusDate", todayString);
   }
 
   // Lấy dữ liệu hôm nay của user
