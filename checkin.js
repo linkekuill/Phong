@@ -124,7 +124,7 @@ function saveToEntries(typeText, ca) {
     name,
     email,
     type: typeText + " (bằng mã QR)",
-    shift: (ca === "caSang") ? "Sáng" : "Chiều",
+    shift: (ca === "Sáng" || ca === "caSang") ? "Sáng" : "Chiều",
     reason: "",
     day,
     time,
